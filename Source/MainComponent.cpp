@@ -49,20 +49,6 @@ MainComponent::~MainComponent()
 
 void MainComponent::saveSettings()
 {
-    //std::map<std::string, std::string> libSettings{playlistComponent.getSettings()};
-    //std::map<std::string, std::string> appSettings{ playlistComponent.getSettings() };
-
-    //std::map<std::string, std::map<std::string, std::string>> allSettings;
-    //allSettings["lib"] = libSettings;
-    //allSettings["app"] = appSettings;
-
-    //nlohmann::json jmap = allSettings;
-    //nlohmann::json jmap{};
-    //jmap["prop1"] = "val1";
-    //jmap["prop2"] = "val2";
-
-    //DynamicObject* settings = new juce::DynamicObject();
-    //settings->setProperty("libprop1", "libval1");
     
     var libSettings{ playlistComponent.getSettings() };
     var appSettings{ playlistComponent.getSettings() };
@@ -72,13 +58,11 @@ void MainComponent::saveSettings()
     s.getDynamicObject()->setProperty("library", libSettings);
     s.getDynamicObject()->setProperty("app", appSettings);
 
-
-
     String settingsString = JSON::toString(s);
 
     DBG(settingsString);
     
-    File settingsFile{ File::getCurrentWorkingDirectory().getChildFile("settings").getFullPathName()};
+    //File settingsFile{ File::getCurrentWorkingDirectory().getChildFile(settingsFile).getFullPathName()};
     FileOutputStream outputStream{settingsFile};
     if (outputStream.openedOk())
     {
@@ -91,7 +75,7 @@ void MainComponent::saveSettings()
 
 void MainComponent::loadSettings()
 {
-    File settingsFile{ File::getCurrentWorkingDirectory().getChildFile("settings").getFullPathName() };
+    //File settingsFile{ File::getCurrentWorkingDirectory().getChildFile(settingsFile).getFullPathName() };
     FileInputStream inputStream{ settingsFile };
 
     if (inputStream.openedOk())

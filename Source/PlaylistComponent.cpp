@@ -20,6 +20,7 @@ PlaylistComponent::PlaylistComponent()
     //Save this state and reload from previous?
     //DEFAULT_MUSIC_LOCATION = File::getSpecialLocation(File::SpecialLocationType::userMusicDirectory);
 
+    tableComponent.getHeader().addColumn("ID", (int)COLS::ID, 50);
     tableComponent.getHeader().addColumn("Track Title", (int) COLS::FILENAME, 300);
     tableComponent.getHeader().addColumn("Play", (int) COLS::PLAY, 50);
     tableComponent.getHeader().addColumn("Loading", (int) COLS::LOADING, 50);
@@ -65,21 +66,27 @@ PlaylistComponent::~PlaylistComponent()
 {
 }
 
-/*
-std::map<std::string, std::string> PlaylistComponent::getSettings()
+void PlaylistComponent::sortOrderChanged(int newSortColumnId, bool isForwards)
 {
-    std::map<std::string, std::string> settings{};
-    settings["MusicLocation"] = DEFAULT_MUSIC_LOCATION.getFullPathName().toStdString();
-    settings["PlaylistLocation"] = DEFAULT_APP_LOCATION.getFullPathName().toStdString();
-    return settings;
+    if (newSortColumnId == (int) COLS::FILENAME)
+    {
+        trackList.sortByName(isForwards);
+    }
+    if (newSortColumnId == (int)COLS::ID)
+    {
+        trackList.sortByID(isForwards);
+    }
+    tableComponent.updateContent();
+
 }
-*/
+
 
 juce::var PlaylistComponent::getSettings()
 {
     var settings{ new juce::DynamicObject{} };
-    settings.getDynamicObject()->setProperty("MusicLocation", DEFAULT_MUSIC_LOCATION.getFullPathName());
-    settings.getDynamicObject()->setProperty("PlaylistLocation", DEFAULT_APP_LOCATION.getFullPathName());
+    settings.getDynamicObject()->setProperty("MusicLocation", trackList.getFileLocation());
+    settings.getDynamicObject()->setProperty("PlaylistLocation", trackList.getFileListLocation());
+    //settings.getDynamicObject()->setProperty("LastPlaylistName", trackList.getFileListLocation()  );
     return settings;
 }
 
@@ -91,12 +98,16 @@ void PlaylistComponent::setSettings(var settings)
     if (settings.hasProperty("MusicLocation"))
     {
         String musicLoc = settings.getProperty("MusicLocation", "");
-        if (musicLoc != "") DEFAULT_MUSIC_LOCATION = File{musicLoc};
+        if (musicLoc != "")
+            //DEFAULT_MUSIC_LOCATION = File{musicLoc};
+            trackList.setFileLocation(File{musicLoc});
     }
     if (settings.hasProperty("PlaylistLocation"))
     {
         String appLoc = settings.getProperty("PlaylistLocation", "");
-        if (appLoc != "") DEFAULT_APP_LOCATION = File{ appLoc};
+        if (appLoc != "")
+            //DEFAULT_APP_LOCATION = File{ appLoc};
+            trackList.setFileListLocation(File{ appLoc });
     }
 
 }
@@ -194,6 +205,14 @@ void PlaylistComponent::paintCell(Graphics& g,
     //rowNumber may return a value greater than the number of rows in the list(vector) as per JUCE docs
     if (rowNumber < getNumRows())
     {
+        if (columnId == (int)COLS::ID)
+        {
+            g.drawText((String) trackList.getFileListItemVisible(rowNumber).fileID,
+                2, 0,
+                width - 4, height,
+                Justification::centredLeft,
+                true);
+        }
         if (columnId == (int) COLS::FILENAME)
         {
             g.drawText(trackList.getFileVisible(rowNumber).getFileName(),

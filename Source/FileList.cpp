@@ -41,15 +41,69 @@ void FileList::addFilesFromChooser(int visibleInsertPos)
     }
 }
 
+void FileList::sortByName(bool isForwards)
+{
+    if (isForwards)
+    {
+        std::sort(filesAll.begin(), filesAll.end(), FileList::compFileNamesAsc);
+    }
+    else
+    {
+        std::sort(filesAll.begin(), filesAll.end(), FileList::compFileNamesDesc);
+    }
+}
+
+void FileList::sortByID(bool isForwards)
+{
+    if (isForwards)
+    {
+        std::sort(filesAll.begin(), filesAll.end(), FileList::compFileIDAsc);
+    }
+    else
+    {
+        std::sort(filesAll.begin(), filesAll.end(), FileList::compFileIDDesc);
+    }
+}
+
+bool FileList::compFileIDAsc(const FileListItem& f1, const FileListItem& f2)
+{
+    return (f2.fileID > f1.fileID);
+}
+bool FileList::compFileIDDesc(const FileListItem& f1, const FileListItem& f2)
+{
+    return compFileIDAsc(f2, f1);
+}
+
+
+bool FileList::compFileNamesAsc(const FileListItem& f1, const FileListItem& f2)
+{
+    return (f2.file.getFileName() > f1.file.getFileName());
+}
+
+bool FileList::compFileNamesDesc(const FileListItem& f1, const FileListItem& f2)
+{
+    return compFileNamesAsc(f2, f1);
+}
+
 void FileList::setFileLocation(File file)
 {
     DEFAULT_FILE_LOCATION = file;
 }
-
 void FileList::setFileListLocation(File file)
 {
     DEFAULT_FILELIST_LOCATION = file;
 }
+
+juce::String FileList::getFileLocation()
+{
+    return DEFAULT_FILE_LOCATION.getFullPathName();
+}
+juce::String FileList::getFileListLocation()
+{
+    return DEFAULT_FILELIST_LOCATION.getFullPathName();
+}
+
+
 
 void FileList::insertFiles(const juce::Array<juce::File>& newTracks, int insertPos)
 {
@@ -61,7 +115,7 @@ void FileList::insertFiles(const juce::Array<juce::File>& newTracks, int insertP
     {
         for (const File& f : newTracks)
         {
-            filesAll.insert(filesAll.begin() + insertPos, FileListItem{ f, true });
+            filesAll.insert(filesAll.begin() + insertPos, FileListItem{-1, f, true });
             ++insertPos;
         }
     }
@@ -75,7 +129,7 @@ void FileList::updateIndexes()
     filesVisible.clear();
     for (int i =0; i<filesAll.size(); ++i)
     {
-        //filesAll[i].fileID = i;
+        filesAll[i].fileID = i;
         if (filesAll[i].visible)
         {
             filesVisible.push_back(i);
@@ -113,6 +167,25 @@ File FileList::getFileVisible(int visibleFileIndex)
     DBG("Bad visible file index:" << visibleFileIndex);
     return File{};
 }
+
+FileList::FileListItem FileList::getFileListItemVisible(int visibleFileIndex)
+{
+    int count{ 0 };
+    for (const FileListItem& f : filesAll)
+    {
+        if (f.visible)
+        {
+            if (count == visibleFileIndex) return f;
+            ++count;
+        }
+    }
+
+    //No visible file found with that index, return empty File
+    DBG("Bad visible file index:" << visibleFileIndex);
+    return FileListItem{};
+}
+
+
 
 
 void FileList::filterFiles(const juce::String& searchText)
@@ -228,7 +301,7 @@ void FileList::loadFileListFromDisk(File loadFile)
         {
             auto nextTrack = stream.readNextLine();
             DBG(nextTrack);
-            filesAll.push_back(FileListItem{ File{ nextTrack }, true });
+            filesAll.push_back(FileListItem{ -1, File{ nextTrack }, true });
         }
     }
     updateIndexes();

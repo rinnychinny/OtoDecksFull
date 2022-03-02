@@ -72,10 +72,15 @@ public:
 
     void deleteKeyPressed(int currentSelectedRow) override;
 
+    void sortOrderChanged(int newSortColumnId, bool isForwards); //TableListBoxModel
+
 private:
     
-    File DEFAULT_MUSIC_LOCATION{ File::getSpecialLocation(File::SpecialLocationType::userMusicDirectory) };
-    File DEFAULT_APP_LOCATION{ File::getCurrentWorkingDirectory() };
+    //used to initialise trackList before any settings get applied
+    File MUSIC_LOCATION{ File::getSpecialLocation(File::SpecialLocationType::userMusicDirectory) };
+    File APP_LOCATION{ File::getCurrentWorkingDirectory() };
+    FileList trackList{ MUSIC_LOCATION, APP_LOCATION };
+
 
     
     /**Opens dialog box to select multiples files to add to playlist*/
@@ -87,12 +92,11 @@ private:
     /**Opens dialog box to save all files in library to a file list*/
     void SaveFilesAs();
 
-    enum class COLS { FILENAME = 1, PLAY, STATUS, LOADING, LENGTH, FORMAT, DECK};
+    enum class COLS { ID = 1, FILENAME, PLAY, STATUS, LOADING, LENGTH, FORMAT, DECK};
     enum class MENU { PLAY = 1, REMOVE, INSERT };
 
     TableListBox tableComponent;
     
-    FileList trackList{ DEFAULT_MUSIC_LOCATION, DEFAULT_APP_LOCATION };
     
     /*used to update all visible tracks after amending tracksAll vector*/
     //void updateTracksVisible();

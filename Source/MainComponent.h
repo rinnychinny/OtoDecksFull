@@ -55,7 +55,7 @@ private:
     void saveSettings();
     void loadSettings();
 
-    
+    File settingsFile{ File::getCurrentWorkingDirectory().getChildFile("settings.oto")};
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
